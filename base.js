@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CELCAT to .ics
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  This is a custom browser script that converts CELCAT calendar data into iCalendar (.ics) format that can be exported and used in other schedule management applications.
 // @homepageURL  https://github.com/kotomax24/CELCAT-to-.ics
 // @updateURL    https://raw.githubusercontent.com/kotomax24/CELCAT-to-.ics/main/base.js
@@ -58,20 +58,29 @@ function filterClick(name) {
 
 const selectedLanguage = document.querySelector('#requestCulture_RequestCulture_UICulture_Name').value;
 const messages = {
-  'en-US': {
+   'en-US': {
     exportButtonLabel: 'Export',
     errorDialogTitle: 'Error',
     errorDialogMessage: 'An error occurred.',
+    okButtonLabel: 'Ok',
+    cancelButtonLabel: 'Cancel',
+    notConnectedMessage: 'You must be connected to use this script',
   },
   'fr-FR': {
     exportButtonLabel: 'Exporter',
     errorDialogTitle: 'Erreur',
     errorDialogMessage: 'Une erreur s\'est produite.',
+    okButtonLabel: 'Ok',
+    cancelButtonLabel: 'Annuler',
+    notConnectedMessage: 'Vous devez être connecté pour utiliser ce script',
   },
   'en-GB': {
     exportButtonLabel: 'Export',
     errorDialogTitle: 'Error',
     errorDialogMessage: 'An error occurred.',
+    okButtonLabel: 'Ok',
+    cancelButtonLabel: 'Cancel',
+    notConnectedMessage: 'You must be connected to use this script',
   }
 };
 
@@ -80,16 +89,16 @@ const messages = {
  * @param name name of the dialog to show
  */
 function showDialog(name) {
-	// GM_log(`Showing dialog ${name}`)
-	const dialog = document.getElementById(`customDialog-${name}`)
-	document.body.classList.add("modal-open")
-	document.body.appendChild(modalFadeIn)
-	dialog.style.display = "block"
-	dialog.style.paddingLeft = "0px"
+	const dialog = document.getElementById(`customDialog-${name}`);
+	document.body.classList.add("modal-open");
+	document.body.appendChild(modalFadeIn);
+	dialog.style.display = "block";
+	dialog.style.paddingLeft = "0px";
 
 	setTimeout(() => {
-		dialog.classList.add("in")
-	}, 200)
+		dialog.classList.add("in");
+		document.querySelector(`#customDialog-${name} .btn-default`).style.display = "none";
+	}, 200);
 }
 
 function dialogShowEvent(name) {
@@ -325,11 +334,11 @@ mainDialog.setErrorMessage = (message) => {
 
 const errorDialog = buildDialog(
 	"errorDialog",
-	"Erreur",
-	"",
+	messages[selectedLanguage].errorDialogTitle,
+	messages[selectedLanguage].notConnectedMessage,
 	() => true,
 	{}
-)
+);
 errorDialog.show = (message) => {
 	errorDialog.querySelector(".modal-body p").textContent = message
 	showDialog("errorDialog")
@@ -559,7 +568,7 @@ function addButton() {
 						if (isConnected()) {
 							showDialog("mainDialog")
 						} else {
-							errorDialog.show("Vous devez être connecté pour utiliser ce script.")
+							errorDialog.show(messages[selectedLanguage].notConnectedMessage)
 						}
 					}
                 }
