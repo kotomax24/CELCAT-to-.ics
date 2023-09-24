@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CELCAT to .ics
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  This is a custom browser script that converts CELCAT calendar data into iCalendar (.ics) format that can be exported and used in other schedule management applications.
 // @homepageURL  https://github.com/kotomax24/CELCAT-to-.ics
 // @updateURL    https://raw.githubusercontent.com/kotomax24/CELCAT-to-.ics/main/base.js
@@ -210,7 +210,7 @@ function buildDialog(name, title, description, dataValidation, jsonHTMLContent) 
 										class: ["btn", "btn-default"],
 										type: "button",
 										"data-dismiss": "modal",
-										content: selectedLanguage === 'fr-FR' ? "Ok" : "Export", // Обновленный текст
+										content: selectedLanguage === 'fr-FR' ? "Exporter" : "Export",
 										events: {
 											"click": () => {
 												if (!dataValidation()) return
@@ -223,7 +223,7 @@ function buildDialog(name, title, description, dataValidation, jsonHTMLContent) 
 										class: ["btn", "btn-default"],
 										type: "button",
 										"data-dismiss": "modal",
-										content: selectedLanguage === 'fr-FR' ? "Annuler" : "Cancel", // Обновленный текст
+										content: selectedLanguage === 'fr-FR' ? "Annuler" : "Cancel",
 										events: {
 											"click": dialogHideEvent(name)
 										}
@@ -242,7 +242,7 @@ function buildDialog(name, title, description, dataValidation, jsonHTMLContent) 
 
 const mainDialog = buildDialog(
 	"mainDialog",
-	selectedLanguage === 'fr-FR' ? "Exportation iCalendar" : "iCalendar Export",
+	selectedLanguage === 'fr-FR' ? "Exporter en .ics" : "Export to .ics",
 	selectedLanguage === 'fr-FR' ? "Sélectionner les dates de l'export que vous voulez faire." : "Select the export dates you want to use.",
 	exportData,
 	{
@@ -553,29 +553,44 @@ function exportData() {
  * Add the export button to the page interface
  */
 function addButton() {
-    const navBar = document.querySelector("#main-navbar-collapse .navbar-nav")
+    const navBar = document.querySelector("#main-navbar-collapse .navbar-nav");
     const button = jsonToHTML({
-        elementType:"li",
+        elementType: "li",
         class: ["navbar-link"],
         childs: [
             {
                 elementType: "a",
-                id: "iCalndarGeneration",
+                id: "iCalendarGeneration",
                 content: messages[selectedLanguage].exportButtonLabel,
                 style: "cursor:pointer;",
                 events: {
-					"click": () => {
-						if (isConnected()) {
-							showDialog("mainDialog")
-						} else {
-							errorDialog.show(messages[selectedLanguage].notConnectedMessage)
-						}
-					}
+                    "click": () => {
+                        if (isConnected()) {
+                            showDialog("mainDialog");
+                        } else {
+                            errorDialog.show(messages[selectedLanguage].notConnectedMessage);
+                        }
+                    }
                 }
             }
         ]
-    })
-    navBar.appendChild(button)
+    });
+    navBar.appendChild(button);
+    mainDialog.querySelector(".modal-footer").prepend(
+        jsonToHTML({
+            elementType: "button",
+            class: ["btn", "btn-default"],
+            type: "button",
+            "data-dismiss": "modal",
+            content: messages[selectedLanguage].exportButtonLabel,
+            events: {
+                "click": () => {
+                    if (!exportData()) return;
+                    hideDialog("mainDialog");
+                }
+            }
+        })
+    );
 }
 
 (function() {
